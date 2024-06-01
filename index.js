@@ -5,7 +5,10 @@ require('dotenv').config()
 const port = process.env.PORT || 5000
 const app = express()
 
-
+app.use(express.json())
+app.use(cors({
+    origin: ['http://localhost:5173','https://active-edge-0.web.app','https://active-edge-0.firebaseapp.com']
+}))
 
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@databases1.utppk3d.mongodb.net/?retryWrites=true&w=majority&appName=databases1`;
@@ -24,8 +27,16 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
 
+    const usersCollection = client.db('Active-Edge').collection('Users')
+
     app.get('/',(req,res)=>{
         res.send('Active Edge Server')
+    })
+
+    app.post('/addUser',async (req,res)=>{
+        const userData = req.body
+        const addUser = await usersCollection.insertOne(userData)
+        res.send(addUser)
     })
    
     // Send a ping to confirm a successful connection
