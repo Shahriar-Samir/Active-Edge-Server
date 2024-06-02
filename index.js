@@ -33,6 +33,12 @@ async function run() {
         res.send('Active Edge Server')
     })
 
+    app.get('/user/:id',async (req,res)=>{
+        const {id} = req.params
+        const getUser = await usersCollection.findOne({uid:id})
+        res.send(getUser)
+    })
+
     app.post('/addUser',async (req,res)=>{
         const userData = req.body
         const addUser = await usersCollection.insertOne(userData)
