@@ -68,6 +68,12 @@ async function run() {
       res.send(trainers)
     })
 
+    app.get('/trainerData/:uid',async (req,res)=>{
+      const {uid} = req.params
+      const trainer = await usersCollection.findOne({uid})
+      res.send(trainer)
+    })
+
     app.post('/addUser',async (req,res)=>{
         const userData = req.body
         const addUser = await usersCollection.insertOne(userData)
