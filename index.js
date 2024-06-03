@@ -28,6 +28,7 @@ async function run() {
     // await client.connect();
 
     const usersCollection = client.db('Active-Edge').collection('Users')
+    const classCollection = client.db('Active-Edge').collection('Classes')
 
     app.get('/',(req,res)=>{
         res.send('Active Edge Server')
@@ -43,6 +44,12 @@ async function run() {
         const userData = req.body
         const addUser = await usersCollection.insertOne(userData)
         res.send(addUser)
+    })
+    
+    app.post('/addClass',async (req,res)=>{
+        const userData = req.body
+        const addClass = await classCollection.insertOne(userData)
+        res.send(addClass)
     })
    
     // Send a ping to confirm a successful connection
