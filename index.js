@@ -58,6 +58,11 @@ async function run() {
         res.send(subscribers)
     })
 
+    app.get('/forumPosts',async (req,res)=>{
+      const posts = await forumPostCollection.find().toArray()
+      res.send(posts)
+    })
+
     app.post('/addUser',async (req,res)=>{
         const userData = req.body
         const addUser = await usersCollection.insertOne(userData)
