@@ -63,6 +63,11 @@ async function run() {
       res.send(posts)
     })
 
+    app.get('/trainers',async (req,res)=>{
+      const trainers = await usersCollection.find({role:'trainer'}).toArray()
+      res.send(trainers)
+    })
+
     app.post('/addUser',async (req,res)=>{
         const userData = req.body
         const addUser = await usersCollection.insertOne(userData)
