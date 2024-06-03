@@ -75,6 +75,11 @@ async function run() {
       res.send(trainer)
     })
 
+    app.get('/applications',async (req,res)=>{
+      const applications = await applicationCollection.find().toArray()
+      res.send(applications)
+    })
+
     app.post('/addUser',async (req,res)=>{
         const userData = req.body
         const addUser = await usersCollection.insertOne(userData)
