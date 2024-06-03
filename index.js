@@ -31,6 +31,7 @@ async function run() {
     const classCollection = client.db('Active-Edge').collection('Classes')
     const subscriberCollection = client.db('Active-Edge').collection('Subscribers')
     const forumPostCollection = client.db('Active-Edge').collection('Forum_Posts')
+    const applicationCollection = client.db('Active-Edge').collection('Applications')
 
     app.get('/',(req,res)=>{
         res.send('Active Edge Server')
@@ -96,6 +97,12 @@ async function run() {
         const post = req.body
         const addPost = await forumPostCollection.insertOne(post)
         res.send(addPost)
+    })
+
+    app.post('/trainerApply',async (req,res)=>{
+        const application = req.body
+        const addApplication = await applicationCollection.insertOne(application)
+        res.send(addApplication)
     })
    
     // Send a ping to confirm a successful connection
