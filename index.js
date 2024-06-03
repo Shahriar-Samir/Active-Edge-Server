@@ -52,6 +52,10 @@ async function run() {
         const getClasses = await classCollection.find().toArray()
         res.send(getClasses)
     })
+    app.get('/subscribers',async (req,res)=>{
+        const subscribers = await subscriberCollection.find().toArray()
+        res.send(subscribers)
+    })
 
     app.post('/addUser',async (req,res)=>{
         const userData = req.body
