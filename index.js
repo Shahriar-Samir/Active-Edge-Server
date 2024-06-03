@@ -40,11 +40,16 @@ async function run() {
         res.send(getUser)
     })
     app.get('/featuredClasses',async (req,res)=>{
-        const getUser = await classCollection.aggregate([
+        const getClasses = await classCollection.aggregate([
           {$sort: {bookings:-1}},
           {$limit: 6}
         ]).toArray()
-        res.send(getUser)
+        res.send(getClasses)
+    })
+
+    app.get('/allClasses',async (req,res)=>{
+        const getClasses = await classCollection.find().toArray()
+        res.send(getClasses)
     })
 
     app.post('/addUser',async (req,res)=>{
