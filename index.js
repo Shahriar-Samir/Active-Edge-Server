@@ -39,6 +39,13 @@ async function run() {
         const getUser = await usersCollection.findOne({uid:id})
         res.send(getUser)
     })
+    app.get('/featuredClasses',async (req,res)=>{
+        const getUser = await classCollection.aggregate([
+          {$sort: {bookings:-1}},
+          {$limit: 6}
+        ]).toArray()
+        res.send(getUser)
+    })
 
     app.post('/addUser',async (req,res)=>{
         const userData = req.body
