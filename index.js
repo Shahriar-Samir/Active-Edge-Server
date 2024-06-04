@@ -80,6 +80,12 @@ async function run() {
       res.send(applications)
     })
 
+    app.get('/application/:uid',async (req,res)=>{
+      const {uid} = req.params
+      const application = await applicationCollection.findOne({uid})
+      res.send(application)
+    })
+
     app.post('/addUser',async (req,res)=>{
         const userData = req.body
         const addUser = await usersCollection.insertOne(userData)
@@ -110,6 +116,7 @@ async function run() {
             $set:{
              fullName: applicantData.fullName,
              photoURL: applicantData.image,
+             role: 'trainer',
              role: 'trainer',
              age: applicantData.age,
              skills: applicantData.skills,
