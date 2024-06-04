@@ -149,6 +149,19 @@ async function run() {
 
     })
 
+    app.put('/rejectApplication',async (req,res)=>{
+      const applicationData = req.body
+      const options = {upsert:true}
+      const applicationId = new ObjectId(applicationData._id)
+      const updateData = {
+        $set:{
+          status:'rejected',
+        },
+      }
+      const deleteApplication = await applicationCollection.updateOne({_id: applicationId},updateData,options)
+      res.send(deleteApplication)
+    }) 
+
     app.delete('/deleteApplication/:id',async (req,res)=>{
           const {id} = req.params
           const applicationId = new ObjectId(id)
