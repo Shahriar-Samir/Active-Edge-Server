@@ -103,6 +103,23 @@ async function run() {
         const addPost = await forumPostCollection.insertOne(post)
         res.send(addPost)
     })
+    app.post('/confirmApplication',async (req,res)=>{
+        const {applicantData} = req.body
+        const options = {upsert:true}
+        const updatedData = {
+            $set:{
+             fullName: applicantData.fullName,
+             photoURL: applicantData.image,
+             role: 'trainer',
+             age: applicantData.age,
+             skills: applicantData.skills,
+             time: applicantData.time,
+             days: applicantData.days,
+          }
+        }
+        const addTrainer = await usersCollection.updateOne({uid: applicantData.uid},updatedData,options)
+        res.send(addTrainer)
+    })
 
     app.post('/trainerApply',async (req,res)=>{
         const application = req.body
