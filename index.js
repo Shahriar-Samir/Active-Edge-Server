@@ -115,6 +115,7 @@ async function run() {
              skills: applicantData.skills,
              time: applicantData.time,
              days: applicantData.days,
+             startedDate: applicantData.startedDate,
           }
         }
         const addTrainer = await usersCollection.updateOne({uid: applicantData.uid},updatedData,options)
@@ -125,6 +126,27 @@ async function run() {
         const application = req.body
         const addApplication = await applicationCollection.insertOne(application)
         res.send(addApplication)
+    })
+
+    app.put('/removeTrainer',async(req,res)=>{
+          const trainerData = req.body
+          const options = {upsert:true}
+          const updatedData = {
+              $set:{
+               role: 'member',
+            },
+            $unset:{
+              fullName: '',
+              age: '',
+              skills: '',
+              time: '',
+              days: '',
+              startedDate: '',
+            }
+          }
+          const addTrainer = await usersCollection.updateOne({uid: trainerData.uid},updatedData,options)
+          res.send(addTrainer)
+
     })
 
     app.delete('/deleteApplication/:id',async (req,res)=>{
