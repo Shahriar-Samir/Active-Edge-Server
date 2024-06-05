@@ -80,9 +80,16 @@ async function run() {
       res.send(applications)
     })
 
-    app.get('/application/:uid',async (req,res)=>{
-      const {uid} = req.params
-      const application = await applicationCollection.findOne({uid})
+    app.get('/application',async (req,res)=>{
+      const {uid} = req.query
+      const application = await applicationCollection.findOne({uid, status:'pending'})
+      res.send(application)
+
+    })
+
+    app.get('/userApplications',async (req,res)=>{
+      const {uid} = req.query
+      const application = await applicationCollection.find({uid, status:'rejected'}).sort({applyDate:-1}).toArray()
       res.send(application)
     })
 
