@@ -170,6 +170,7 @@ async function run() {
       const updateData = {
         $set:{
           status:'rejected',
+          feedback: applicationData.feedback
         },
       }
       const deleteApplication = await applicationCollection.updateOne({_id: applicationId},updateData,options)
