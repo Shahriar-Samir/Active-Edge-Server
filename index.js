@@ -32,6 +32,7 @@ async function run() {
     const subscriberCollection = client.db('Active-Edge').collection('Subscribers')
     const forumPostCollection = client.db('Active-Edge').collection('Forum_Posts')
     const applicationCollection = client.db('Active-Edge').collection('Applications')
+    const slotCollection = client.db('Active-Edge').collection('Slots')
 
     app.get('/',(req,res)=>{
         res.send('Active Edge Server')
@@ -140,6 +141,12 @@ async function run() {
         const application = req.body
         const addApplication = await applicationCollection.insertOne(application)
         res.send(addApplication)
+    })
+
+    app.post('/addSlot',async (req,res)=>{
+        const slotInfo = req.body
+        const addSlot = await slotCollection.insertOne(slotInfo)
+        res.send(addSlot)
     })
 
     app.put('/removeTrainer',async(req,res)=>{
