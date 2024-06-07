@@ -93,6 +93,11 @@ async function run() {
       const application = await applicationCollection.find({uid, status:'rejected'}).sort({applyDate:-1}).toArray()
       res.send(application)
     })
+    app.get('/trainerSlots/:id',async (req,res)=>{
+      const {id} = req.params
+      const slots = await slotCollection.find({uid:id}).toArray()
+      res.send(slots)
+    })
 
     app.post('/addUser',async (req,res)=>{
         const userData = req.body
