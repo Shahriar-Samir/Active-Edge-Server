@@ -195,6 +195,12 @@ async function run() {
           const deleteApplication = await applicationCollection.deleteOne({_id:applicationId})
           res.send(deleteApplication)
     })
+    app.delete('/deleteSlot/:id',async (req,res)=>{
+          const {id} = req.params
+          const applicationId = new ObjectId(id)
+          const deleteApplication = await slotCollection.deleteOne({_id:applicationId})
+          res.send(deleteApplication)
+    })
    
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
