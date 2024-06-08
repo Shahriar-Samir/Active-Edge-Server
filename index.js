@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config()
+const stripe = require('stripe')(process.env.STRIPE_SECRET)
 
 const port = process.env.PORT || 5000
 const app = express()
@@ -11,6 +12,7 @@ app.use(cors({
 }))
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { parse } = require('dotenv');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@databases1.utppk3d.mongodb.net/?retryWrites=true&w=majority&appName=databases1`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -97,6 +99,12 @@ async function run() {
       const {id} = req.params
       const slots = await slotCollection.find({uid:id}).toArray()
       res.send(slots)
+    })
+    app.get('/trainerSlot/:id',async (req,res)=>{
+      const {id} = req.params
+      const idInt = new ObjectId(id)
+      const slot = await slotCollection.findOne({_id:idInt})
+      res.send(slot)
     })
 
     app.post('/addUser',async (req,res)=>{
@@ -200,6 +208,20 @@ async function run() {
           const applicationId = new ObjectId(id)
           const deleteApplication = await slotCollection.deleteOne({_id:applicationId})
           res.send(deleteApplication)
+    })
+
+
+    app.post('/createPaymentIntent',async (req,res)=>{
+      const {price} = req.body
+      const amount = parseInt(price*100)
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: 'usd',
+        payment_method_types: ['card']
+      })
+      res.send({
+        clientSecret: paymentIntent.client_secret
+      })
     })
    
     // Send a ping to confirm a successful connection
