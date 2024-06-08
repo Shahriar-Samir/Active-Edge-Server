@@ -108,7 +108,7 @@ async function run() {
       res.send(slot)
     })
     app.get('/payments',async (req,res)=>{
-      const payments = await paymentCollection.find().toArray()
+      const payments = await paymentCollection.find().sort({ date: -1 }).limit(6).toArray()
       res.send(payments)
     })
     app.get('/totalBalance',async (req,res)=>{
