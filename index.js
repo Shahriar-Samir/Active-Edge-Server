@@ -72,6 +72,12 @@ async function run() {
         const getUser = await usersCollection.findOne({uid:id})
         res.send(getUser)
     })
+    app.get('/userRole/:id',async (req,res)=>{
+        const {id} = req.params
+        const getUser = await usersCollection.findOne({uid:id})
+        const userRole = await getUser.role
+        res.send(userRole)
+    })
     app.get('/featuredClasses',async (req,res)=>{
         const getClasses = await classCollection.aggregate([
           {$sort: {bookings:-1}},
