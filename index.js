@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config()
 const stripe = require('stripe')(process.env.STRIPE_SECRET)
-
+const jwt = require('jsonwebtoken')
 const port = process.env.PORT || 5000
 const app = express()
 
@@ -11,8 +11,23 @@ app.use(cors({
     origin: ['http://localhost:5173','https://active-edge-0.web.app','https://active-edge-0.firebaseapp.com']
 }))
 
+
+const secureRoute = (req,res,next)=>{
+    if(!req.headers.authorization){
+      return res.status(401).send({message:'forbidden access'})
+    }
+    const {authorization} = req.headers
+    const token = authorization.split(' ')[1]
+    jwt.verify(token,process.env.TOKEN,(err,decoded)=>{    
+      if(err){
+        return res.status(401).send({message:'forbidden access'})
+      }
+      req.decoded = decoded
+      next()
+    })
+}
+
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-const { parse } = require('dotenv');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@databases1.utppk3d.mongodb.net/?retryWrites=true&w=majority&appName=databases1`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -37,6 +52,17 @@ async function run() {
     const slotCollection = client.db('Active-Edge').collection('Slots')
     const paymentCollection = client.db('Active-Edge').collection('Payments')
 
+
+    // token related routes
+
+    app.post('/jwt', (req,res)=>{
+      const user = req.body
+      const token =jwt.sign(user, process.env.TOKEN, {expiresIn: '1h'})
+      res.send({token})
+    })  
+
+
+
     app.get('/',(req,res)=>{
         res.send('Active Edge Server')
     })
@@ -58,7 +84,7 @@ async function run() {
         const getClasses = await classCollection.find().toArray()
         res.send(getClasses)
     })
-    app.get('/subscribers',async (req,res)=>{
+    app.get('/subscribers',secureRoute, async (req,res)=>{
         const subscribers = await subscriberCollection.find().toArray()
         res.send(subscribers)
     })
