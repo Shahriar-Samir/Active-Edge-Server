@@ -111,6 +111,18 @@ async function run() {
       const payments = await paymentCollection.find().toArray()
       res.send(payments)
     })
+    app.get('/totalBalance',async (req,res)=>{
+      const paymentsAmount = await paymentCollection.aggregate([
+        {
+          $group:{
+            _id:null,
+            totalSum:{$sum:'$price'}
+          }
+        }
+      ]).toArray()
+      const totalBalance = paymentsAmount.length > 0? paymentsAmount[0].totalSum : 0
+      res.status(200).send({totalBalance})
+    })
 
     app.post('/addUser',async (req,res)=>{
         const userData = req.body
