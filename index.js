@@ -35,6 +35,7 @@ async function run() {
     const forumPostCollection = client.db('Active-Edge').collection('Forum_Posts')
     const applicationCollection = client.db('Active-Edge').collection('Applications')
     const slotCollection = client.db('Active-Edge').collection('Slots')
+    const paymentCollection = client.db('Active-Edge').collection('Payments')
 
     app.get('/',(req,res)=>{
         res.send('Active Edge Server')
@@ -160,6 +161,12 @@ async function run() {
         const slotInfo = req.body
         const addSlot = await slotCollection.insertOne(slotInfo)
         res.send(addSlot)
+    })
+
+    app.post('/addPayment',async (req,res)=>{
+        const paymentInfo = req.body
+        const addPayment = await paymentCollection.insertOne(paymentInfo)
+        res.send(addPayment)
     })
 
     app.put('/removeTrainer',async(req,res)=>{
