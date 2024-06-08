@@ -107,6 +107,10 @@ async function run() {
       const slot = await slotCollection.findOne({_id:idInt})
       res.send(slot)
     })
+    app.get('/payments',async (req,res)=>{
+      const payments = await paymentCollection.find().toArray()
+      res.send(payments)
+    })
 
     app.post('/addUser',async (req,res)=>{
         const userData = req.body
