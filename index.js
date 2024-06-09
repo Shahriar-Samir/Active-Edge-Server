@@ -123,8 +123,8 @@ async function run() {
     app.get('/userRole/:id',async (req,res)=>{
         const {id} = req.params
         const getUser = await usersCollection.findOne({uid:id})
-        const userRole = await getUser.role
-        res.send(userRole)
+        console.log(getUser)
+        res.send(getUser?.role)
     })
     app.get('/featuredClasses',async (req,res)=>{
         const getClasses = await classCollection.aggregate([
@@ -182,12 +182,12 @@ async function run() {
       const application = await applicationCollection.find({uid, status:'rejected'}).sort({applyDate:-1}).toArray()
       res.send(application)
     })
-    app.get('/trainerSlots/:id',secureRoute,verifyTrainer,async (req,res)=>{
+    app.get('/trainerSlots/:id',async (req,res)=>{
       const {id} = req.params
       const slots = await slotCollection.find({uid:id}).toArray()
       res.send(slots)
     })
-    app.get('/trainerSlot/:id',secureRoute,async (req,res)=>{
+    app.get('/trainerSlot/:id',secureRoute,verifyMember,async (req,res)=>{
       const {id} = req.params
       const idInt = new ObjectId(id)
       const slot = await slotCollection.findOne({_id:idInt})
@@ -252,7 +252,7 @@ async function run() {
         res.send(addTrainer)
     })
 
-    app.post('/trainerApply',secureRoute,async (req,res)=>{
+    app.post('/trainerApply',secureRoute,verifyMember,async (req,res)=>{
         const application = req.body
         const addApplication = await applicationCollection.insertOne(application)
         res.send(addApplication)
@@ -264,7 +264,7 @@ async function run() {
         res.send(addSlot)
     })
 
-    app.post('/addPayment',secureRoute,async (req,res)=>{
+    app.post('/addPayment',secureRoute,verifyMember,async (req,res)=>{
         const paymentInfo = req.body
         const addPayment = await paymentCollection.insertOne(paymentInfo)
         res.send(addPayment)
@@ -305,6 +305,19 @@ async function run() {
       res.send(deleteApplication)
     }) 
 
+    app.put('/updateUser',async (req,res)=>{
+          const updateInfo = req.body
+          const options = {upsert:true}
+          const {uid} = updateInfo
+          const updateData = {
+            $set:{
+              displayName : updateInfo.displayName,
+              photoURL : updateInfo.photoURl,
+            },
+          }
+          const updateUserData = await usersCollection.updateOne({uid},updateData,options)
+    })
+
     app.delete('/deleteApplication/:id',secureRoute,verifyAdmin,async (req,res)=>{
           const {id} = req.params
           const applicationId = new ObjectId(id)
@@ -319,7 +332,7 @@ async function run() {
     })
 
 
-    app.post('/createPaymentIntent',secureRoute,async (req,res)=>{
+    app.post('/createPaymentIntent',secureRoute,verifyMember,async (req,res)=>{
       const {price} = req.body
       const amount = parseInt(price*100)
       const paymentIntent = await stripe.paymentIntents.create({
