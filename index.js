@@ -153,6 +153,10 @@ async function run() {
       const trainers = await usersCollection.find({role:'trainer'}).toArray()
       res.send(trainers)
     })
+    app.get('/allTrainers',async(req,res)=>{
+      const trainers = await usersCollection.find({role:'trainer'}).toArray()
+      res.send(trainers)
+    })
 
     app.get('/trainerData/:uid',async (req,res)=>{
       const {uid} = req.params
