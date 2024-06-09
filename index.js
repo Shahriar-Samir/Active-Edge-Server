@@ -79,6 +79,16 @@ async function run() {
      }
      next()
   }
+  const verifyCrossUser = async (req,res,next)=>{
+     const {email} = req.decoded
+     const user = await usersCollection.findOne({email})
+     const isTrainer = user?.role === 'trainer'
+     const isAdmin = user?.role === 'admin'
+     if(isTrainer || isAdmin){
+       return next()
+       }
+      return res.status(403).send({message:'forbidden access'})
+  }
 
 
 
@@ -204,7 +214,7 @@ async function run() {
         res.send(addSubscriber)
     })
 
-    app.post('/addForumPost',secureRoute,async (req,res)=>{
+    app.post('/addForumPost',secureRoute,verifyCrossUser,async (req,res)=>{
         const post = req.body
         const addPost = await forumPostCollection.insertOne(post)
         res.send(addPost)
