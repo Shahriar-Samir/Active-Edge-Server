@@ -79,6 +79,15 @@ async function run() {
      }
      next()
   }
+  const verifyMember = async (req,res,next)=>{
+     const {email} = req.decoded
+     const user = await usersCollection.findOne({email})
+     const isMember = user?.role === 'member'
+     if(!isMember){
+       return res.status(403).send({message:'forbidden access'})
+     }
+     next()
+  }
   const verifyCrossUser = async (req,res,next)=>{
      const {email} = req.decoded
      const user = await usersCollection.findOne({email})
@@ -156,14 +165,14 @@ async function run() {
       res.send(applications)
     })
 
-    app.get('/application',secureRoute,async (req,res)=>{
+    app.get('/application',secureRoute, verifyMember,async (req,res)=>{
       const {uid} = req.query
       const application = await applicationCollection.findOne({uid, status:'pending'})
       res.send(application)
 
     })
 
-    app.get('/userApplications',secureRoute,async (req,res)=>{
+    app.get('/userApplications',secureRoute,verifyMember,async (req,res)=>{
       const {uid} = req.query
       const application = await applicationCollection.find({uid, status:'rejected'}).sort({applyDate:-1}).toArray()
       res.send(application)
