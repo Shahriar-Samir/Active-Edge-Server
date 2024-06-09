@@ -123,7 +123,6 @@ async function run() {
     app.get('/userRole/:id',async (req,res)=>{
         const {id} = req.params
         const getUser = await usersCollection.findOne({uid:id})
-        console.log(getUser)
         res.send(getUser?.role)
     })
     app.get('/featuredClasses',async (req,res)=>{
@@ -170,8 +169,8 @@ async function run() {
       res.send(applications)
     })
 
-    app.get('/application',secureRoute, verifyMember,async (req,res)=>{
-      const {uid} = req.query
+    app.get('/application/:uid',secureRoute, verifyMember,async (req,res)=>{
+      const {uid} = req.params
       const application = await applicationCollection.findOne({uid, status:'pending'})
       res.send(application)
 
@@ -240,6 +239,9 @@ async function run() {
             $set:{
              fullName: applicantData.fullName,
              photoURL: applicantData.image,
+             xp: applicantData.xp,
+             media: applicantData.media,
+             bio: applicantData.bio,
              role: 'trainer',
              age: applicantData.age,
              skills: applicantData.skills,
@@ -312,10 +314,12 @@ async function run() {
           const updateData = {
             $set:{
               displayName : updateInfo.displayName,
-              photoURL : updateInfo.photoURl,
+              photoURL : updateInfo.photoURL,
+              phoneNumber : updateInfo.phoneNumber,
             },
           }
           const updateUserData = await usersCollection.updateOne({uid},updateData,options)
+          res.send(updateUserData)
     })
 
     app.delete('/deleteApplication/:id',secureRoute,verifyAdmin,async (req,res)=>{
