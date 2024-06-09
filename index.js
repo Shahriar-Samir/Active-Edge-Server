@@ -153,6 +153,7 @@ async function run() {
       const trainers = await usersCollection.find({role:'trainer'}).toArray()
       res.send(trainers)
     })
+
     app.get('/allTrainers',async(req,res)=>{
       const trainers = await usersCollection.find({role:'trainer'}).toArray()
       res.send(trainers)
@@ -257,7 +258,7 @@ async function run() {
         res.send(addApplication)
     })
 
-    app.post('/addSlot',secureRoute,async (req,res)=>{
+    app.post('/addSlot',secureRoute,verifyTrainer,async (req,res)=>{
         const slotInfo = req.body
         const addSlot = await slotCollection.insertOne(slotInfo)
         res.send(addSlot)
@@ -310,7 +311,7 @@ async function run() {
           const deleteApplication = await applicationCollection.deleteOne({_id:applicationId})
           res.send(deleteApplication)
     })
-    app.delete('/deleteSlot/:id',secureRoute,async (req,res)=>{
+    app.delete('/deleteSlot/:id',secureRoute,verifyTrainer,async (req,res)=>{
           const {id} = req.params
           const applicationId = new ObjectId(id)
           const deleteApplication = await slotCollection.deleteOne({_id:applicationId})
