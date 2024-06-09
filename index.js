@@ -216,7 +216,7 @@ async function run() {
         res.send(addUser)
     })
     
-    app.post('/addClass',secureRoute,async (req,res)=>{
+    app.post('/addClass',secureRoute,verifyAdmin,async (req,res)=>{
         const userData = req.body
         const addClass = await classCollection.insertOne(userData)
         res.send(addClass)
