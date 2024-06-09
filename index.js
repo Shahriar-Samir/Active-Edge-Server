@@ -70,6 +70,15 @@ async function run() {
      }
      next()
   }
+  const verifyTrainer = async (req,res,next)=>{
+     const {email} = req.decoded
+     const user = await usersCollection.findOne({email})
+     const isTrainer = user?.role === 'trainer'
+     if(!isTrainer){
+       return res.status(403).send({message:'forbidden access'})
+     }
+     next()
+  }
 
 
 
@@ -149,7 +158,7 @@ async function run() {
       const application = await applicationCollection.find({uid, status:'rejected'}).sort({applyDate:-1}).toArray()
       res.send(application)
     })
-    app.get('/trainerSlots/:id', secureRoute,async (req,res)=>{
+    app.get('/trainerSlots/:id',secureRoute,verifyTrainer,async (req,res)=>{
       const {id} = req.params
       const slots = await slotCollection.find({uid:id}).toArray()
       res.send(slots)
