@@ -149,7 +149,7 @@ async function run() {
       res.send(posts)
     })
 
-    app.get('/trainers',async (req,res)=>{
+    app.get('/trainers',secureRoute,verifyAdmin, async(req,res)=>{
       const trainers = await usersCollection.find({role:'trainer'}).toArray()
       res.send(trainers)
     })
@@ -160,7 +160,7 @@ async function run() {
       res.send(trainer)
     })
 
-    app.get('/applications',secureRoute,async (req,res)=>{
+    app.get('/applications',secureRoute,verifyAdmin ,async (req,res)=>{
       const applications = await applicationCollection.find().toArray()
       res.send(applications)
     })
@@ -188,11 +188,11 @@ async function run() {
       const slot = await slotCollection.findOne({_id:idInt})
       res.send(slot)
     })
-    app.get('/payments',secureRoute,async (req,res)=>{
+    app.get('/payments',secureRoute, verifyAdmin,async (req,res)=>{
       const payments = await paymentCollection.find().sort({ date: -1 }).limit(6).toArray()
       res.send(payments)
     })
-    app.get('/totalBalance',secureRoute,async (req,res)=>{
+    app.get('/totalBalance',secureRoute,verifyAdmin,async (req,res)=>{
       const paymentsAmount = await paymentCollection.aggregate([
         {
           $group:{
@@ -228,14 +228,13 @@ async function run() {
         const addPost = await forumPostCollection.insertOne(post)
         res.send(addPost)
     })
-    app.post('/confirmApplication',secureRoute,async (req,res)=>{
+    app.post('/confirmApplication',secureRoute,verifyAdmin,async (req,res)=>{
         const {applicantData} = req.body
         const options = {upsert:true}
         const updatedData = {
             $set:{
              fullName: applicantData.fullName,
              photoURL: applicantData.image,
-             role: 'trainer',
              role: 'trainer',
              age: applicantData.age,
              skills: applicantData.skills,
@@ -266,7 +265,7 @@ async function run() {
         res.send(addPayment)
     })
 
-    app.put('/removeTrainer',secureRoute,async(req,res)=>{
+    app.put('/removeTrainer',secureRoute,verifyAdmin,async(req,res)=>{
           const trainerData = req.body
           const options = {upsert:true}
           const updatedData = {
@@ -287,7 +286,7 @@ async function run() {
 
     })
 
-    app.put('/rejectApplication',secureRoute,async (req,res)=>{
+    app.put('/rejectApplication',secureRoute,verifyAdmin,async (req,res)=>{
       const applicationData = req.body
       const options = {upsert:true}
       const applicationId = new ObjectId(applicationData._id)
@@ -301,7 +300,7 @@ async function run() {
       res.send(deleteApplication)
     }) 
 
-    app.delete('/deleteApplication/:id',secureRoute,async (req,res)=>{
+    app.delete('/deleteApplication/:id',secureRoute,verifyAdmin,async (req,res)=>{
           const {id} = req.params
           const applicationId = new ObjectId(id)
           const deleteApplication = await applicationCollection.deleteOne({_id:applicationId})
