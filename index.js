@@ -12,20 +12,10 @@ app.use(cors({
 }))
 
 
-const secureRoute = (req,res,next)=>{
-    if(!req.headers.authorization){
-      return res.status(401).send({message:'forbidden access'})
-    }
-    const {authorization} = req.headers
-    const token = authorization.split(' ')[1]
-    jwt.verify(token,process.env.TOKEN,(err,decoded)=>{    
-      if(err){
-        return res.status(401).send({message:'forbidden access'})
-      }
-      req.decoded = decoded
-      next()
-    })
-}
+
+
+
+
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@databases1.utppk3d.mongodb.net/?retryWrites=true&w=majority&appName=databases1`;
@@ -53,6 +43,36 @@ async function run() {
     const paymentCollection = client.db('Active-Edge').collection('Payments')
 
 
+
+
+
+    const secureRoute = (req,res,next)=>{
+      if(!req.headers.authorization){
+        return res.status(401).send({message:'forbidden access'})
+      }
+      const {authorization} = req.headers
+      const token = authorization.split(' ')[1]
+      jwt.verify(token,process.env.TOKEN,(err,decoded)=>{    
+        if(err){
+          return res.status(401).send({message:'forbidden access'})
+        }
+        req.decoded = decoded
+        next()
+      })
+  }
+  
+  const verifyAdmin = async (req,res,next)=>{
+     const {email} = req.decoded
+     const user = await usersCollection.findOne({email})
+     const isAdmin = user?.role === 'admin'
+     if(!isAdmin){
+       return res.status(403).send({message:'forbidden access'})
+     }
+     next()
+  }
+
+
+
     // token related routes
 
     app.post('/jwt', (req,res)=>{
@@ -67,7 +87,7 @@ async function run() {
         res.send('Active Edge Server')
     })
 
-    app.get('/user/:id',async (req,res)=>{
+    app.get('/user/:id', secureRoute ,async (req,res)=>{
         const {id} = req.params
         const getUser = await usersCollection.findOne({uid:id})
         res.send(getUser)
@@ -86,13 +106,14 @@ async function run() {
         res.send(getClasses)
     })
 
-    app.get('/allClasses',async (req,res)=>{
+    app.get('/allClasses', async (req,res)=>{
         const getClasses = await classCollection.find().toArray()
         res.send(getClasses)
     })
-    app.get('/subscribers',secureRoute, async (req,res)=>{
+    app.get('/subscribers',secureRoute,verifyAdmin, async (req,res)=>{
         const subscribers = await subscriberCollection.find().toArray()
         res.send(subscribers)
+        
     })
 
     app.get('/forumPosts',async (req,res)=>{
@@ -111,39 +132,39 @@ async function run() {
       res.send(trainer)
     })
 
-    app.get('/applications',async (req,res)=>{
+    app.get('/applications',secureRoute,async (req,res)=>{
       const applications = await applicationCollection.find().toArray()
       res.send(applications)
     })
 
-    app.get('/application',async (req,res)=>{
+    app.get('/application',secureRoute,async (req,res)=>{
       const {uid} = req.query
       const application = await applicationCollection.findOne({uid, status:'pending'})
       res.send(application)
 
     })
 
-    app.get('/userApplications',async (req,res)=>{
+    app.get('/userApplications',secureRoute,async (req,res)=>{
       const {uid} = req.query
       const application = await applicationCollection.find({uid, status:'rejected'}).sort({applyDate:-1}).toArray()
       res.send(application)
     })
-    app.get('/trainerSlots/:id',async (req,res)=>{
+    app.get('/trainerSlots/:id', secureRoute,async (req,res)=>{
       const {id} = req.params
       const slots = await slotCollection.find({uid:id}).toArray()
       res.send(slots)
     })
-    app.get('/trainerSlot/:id',async (req,res)=>{
+    app.get('/trainerSlot/:id',secureRoute,async (req,res)=>{
       const {id} = req.params
       const idInt = new ObjectId(id)
       const slot = await slotCollection.findOne({_id:idInt})
       res.send(slot)
     })
-    app.get('/payments',async (req,res)=>{
+    app.get('/payments',secureRoute,async (req,res)=>{
       const payments = await paymentCollection.find().sort({ date: -1 }).limit(6).toArray()
       res.send(payments)
     })
-    app.get('/totalBalance',async (req,res)=>{
+    app.get('/totalBalance',secureRoute,async (req,res)=>{
       const paymentsAmount = await paymentCollection.aggregate([
         {
           $group:{
@@ -162,7 +183,7 @@ async function run() {
         res.send(addUser)
     })
     
-    app.post('/addClass',async (req,res)=>{
+    app.post('/addClass',secureRoute,async (req,res)=>{
         const userData = req.body
         const addClass = await classCollection.insertOne(userData)
         res.send(addClass)
@@ -174,12 +195,12 @@ async function run() {
         res.send(addSubscriber)
     })
 
-    app.post('/addForumPost',async (req,res)=>{
+    app.post('/addForumPost',secureRoute,async (req,res)=>{
         const post = req.body
         const addPost = await forumPostCollection.insertOne(post)
         res.send(addPost)
     })
-    app.post('/confirmApplication',async (req,res)=>{
+    app.post('/confirmApplication',secureRoute,async (req,res)=>{
         const {applicantData} = req.body
         const options = {upsert:true}
         const updatedData = {
@@ -199,25 +220,25 @@ async function run() {
         res.send(addTrainer)
     })
 
-    app.post('/trainerApply',async (req,res)=>{
+    app.post('/trainerApply',secureRoute,async (req,res)=>{
         const application = req.body
         const addApplication = await applicationCollection.insertOne(application)
         res.send(addApplication)
     })
 
-    app.post('/addSlot',async (req,res)=>{
+    app.post('/addSlot',secureRoute,async (req,res)=>{
         const slotInfo = req.body
         const addSlot = await slotCollection.insertOne(slotInfo)
         res.send(addSlot)
     })
 
-    app.post('/addPayment',async (req,res)=>{
+    app.post('/addPayment',secureRoute,async (req,res)=>{
         const paymentInfo = req.body
         const addPayment = await paymentCollection.insertOne(paymentInfo)
         res.send(addPayment)
     })
 
-    app.put('/removeTrainer',async(req,res)=>{
+    app.put('/removeTrainer',secureRoute,async(req,res)=>{
           const trainerData = req.body
           const options = {upsert:true}
           const updatedData = {
@@ -238,7 +259,7 @@ async function run() {
 
     })
 
-    app.put('/rejectApplication',async (req,res)=>{
+    app.put('/rejectApplication',secureRoute,async (req,res)=>{
       const applicationData = req.body
       const options = {upsert:true}
       const applicationId = new ObjectId(applicationData._id)
@@ -252,13 +273,13 @@ async function run() {
       res.send(deleteApplication)
     }) 
 
-    app.delete('/deleteApplication/:id',async (req,res)=>{
+    app.delete('/deleteApplication/:id',secureRoute,async (req,res)=>{
           const {id} = req.params
           const applicationId = new ObjectId(id)
           const deleteApplication = await applicationCollection.deleteOne({_id:applicationId})
           res.send(deleteApplication)
     })
-    app.delete('/deleteSlot/:id',async (req,res)=>{
+    app.delete('/deleteSlot/:id',secureRoute,async (req,res)=>{
           const {id} = req.params
           const applicationId = new ObjectId(id)
           const deleteApplication = await slotCollection.deleteOne({_id:applicationId})
@@ -266,7 +287,7 @@ async function run() {
     })
 
 
-    app.post('/createPaymentIntent',async (req,res)=>{
+    app.post('/createPaymentIntent',secureRoute,async (req,res)=>{
       const {price} = req.body
       const amount = parseInt(price*100)
       const paymentIntent = await stripe.paymentIntents.create({
