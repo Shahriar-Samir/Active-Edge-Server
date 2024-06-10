@@ -276,6 +276,24 @@ async function run() {
         res.send(addPayment)
     })
 
+    
+    app.put('/updateClasses',secureRoute,verifyTrainer,async (req,res)=>{
+      const data = req.body
+      const options = {upsert:true}
+      const filter = { className: { $in: data.selectedClasses } };
+      const updatedData = {
+        $addToSet:{
+         trainers: {
+           trainerName: data.displayName,
+           trainerUid: data.uid,
+           trainerPhotoURL: data.photoURL,
+         },
+      }
+    }
+      const updateClass = await classCollection.updateMany(filter,updatedData,options)
+      res.send(updateClass)
+    }) 
+
     app.put('/removeTrainer',secureRoute,verifyAdmin,async(req,res)=>{
           const trainerData = req.body
           const options = {upsert:true}
