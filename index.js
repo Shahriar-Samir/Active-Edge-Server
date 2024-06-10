@@ -105,7 +105,7 @@ async function run() {
 
     app.post('/jwt', (req,res)=>{
       const user = req.body
-      const token =jwt.sign(user, process.env.TOKEN, {expiresIn: '1h'})
+      const token =jwt.sign(user, process.env.TOKEN, {expiresIn: '24h'})
       res.send({token})
     })  
 
@@ -155,6 +155,10 @@ async function run() {
 
     app.get('/allTrainers',async(req,res)=>{
       const trainers = await usersCollection.find({role:'trainer'}).toArray()
+      res.send(trainers)
+    })
+    app.get('/trainersTeam',async(req,res)=>{
+      const trainers = await usersCollection.find({role:'trainer'}).sort({startedDate: 1}).limit(3).toArray()
       res.send(trainers)
     })
 
