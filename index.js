@@ -294,6 +294,27 @@ async function run() {
       res.send(updateClass)
     }) 
 
+    app.put('/removeClassTrainer',secureRoute, verifyTrainer, async(req,res)=>{
+      const data = req.body
+      const slots = await slotCollection.find({uid:data.uid}).toArray()
+      if(slots?.length < 1){
+        const options = {upsert:true}
+        const filter = { className: { $in: data.selectedClasses } };
+        const updatedData = {
+          $pull:{
+           trainers: {
+             trainerName: data.displayName,
+             trainerUid: data.uid,
+             trainerPhotoURL: data.photoURL,
+           },
+        }
+      }
+        const updateClass = await classCollection.updateMany(filter,updatedData,options)
+        res.send(updateClass)
+      }
+      res.send()
+    })
+
     app.put('/removeTrainer',secureRoute,verifyAdmin,async(req,res)=>{
           const trainerData = req.body
           const options = {upsert:true}
@@ -356,6 +377,7 @@ async function run() {
           const deleteApplication = await slotCollection.deleteOne({_id:applicationId})
           res.send(deleteApplication)
     })
+
 
 
     app.post('/createPaymentIntent',secureRoute,verifyMember,async (req,res)=>{
