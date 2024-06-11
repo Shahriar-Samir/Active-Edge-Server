@@ -133,6 +133,17 @@ async function run() {
         const getUser = await usersCollection.findOne({uid:id})
         res.send(getUser)
     })
+    app.get('/userData/:id' ,async (req,res)=>{
+        const {id} = req.params
+        const getUser = await usersCollection.findOne({uid:id})
+        if(getUser){
+          if(getUser?.fullName){
+            return res.send({displayName:getUser?.fullName,photoURL:getUser?.photoURL})
+          }
+          return  res.send({displayName:getUser?.displayName,photoURL:getUser?.photoURL})
+        }
+        res.send()
+    })
     app.get('/userRole/:id',async (req,res)=>{
         const {id} = req.params
         const getUser = await usersCollection.findOne({uid:id})
@@ -148,7 +159,6 @@ async function run() {
 
     app.get('/allClasses', async (req,res)=>{
       const {size,page,searchValue} = req.query
-      console.log(searchValue)
           if(searchValue === 'false'){
             const sizeInt = parseInt(size)
             const pageInt = parseInt(page)
@@ -245,6 +255,10 @@ async function run() {
     app.get('/payments',secureRoute, verifyAdmin,async (req,res)=>{
       const payments = await paymentCollection.find().sort({ date: -1 }).limit(6).toArray()
       res.send(payments)
+    })
+    app.get('/allReviews',async (req,res)=>{
+      const reviews = await feedbackCollection.find().sort({ date: -1 }).toArray()
+      res.send(reviews)
     })
     app.get('/totalBalance',secureRoute,verifyAdmin,async (req,res)=>{
       const paymentsAmount = await paymentCollection.aggregate([
