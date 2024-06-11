@@ -241,8 +241,25 @@ async function run() {
         res.send(addData)
     })
     app.delete('/removeUpVote',async (req,res)=>{
-        const {postId,uid,type} = req.query
-        const addData = await voteCollection.deleteOne({postId,uid,type})
+        const {postId,uid} = req.query
+        const addData = await voteCollection.deleteOne({postId,uid,type:'upVote'})
+        res.send(addData)
+    })
+    app.get('/getDownVotes/:postId',async(req,res)=>{
+      const {postId} = req.params
+      const downVotes = await voteCollection.find({postId,type:'downVote'}).toArray()
+      const allDownVotes = downVotes.length
+      res.send({allDownVotes})
+    })
+
+    app.post('/addDownVote',async (req,res)=>{
+        const data = req.body
+        const addData = await voteCollection.insertOne(data)
+        res.send(addData)
+    })
+    app.delete('/removeDownVote',async (req,res)=>{
+        const {postId,uid} = req.query
+        const addData = await voteCollection.deleteOne({postId,uid,type:'downVote'})
         res.send(addData)
     })
     
