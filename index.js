@@ -41,6 +41,7 @@ async function run() {
     const applicationCollection = client.db('Active-Edge').collection('Applications')
     const slotCollection = client.db('Active-Edge').collection('Slots')
     const paymentCollection = client.db('Active-Edge').collection('Payments')
+    const voteCollection = client.db('Active-Edge').collection('Votes')
 
 
 
@@ -225,6 +226,16 @@ async function run() {
         const userData = req.body
         const addUser = await usersCollection.insertOne(userData)
         res.send(addUser)
+    })
+    app.post('/addUpVote',async (req,res)=>{
+        const data = req.body
+        const addData = await voteCollection.insertOne(data)
+        res.send(addData)
+    })
+    app.delete('/removeUpVote',async (req,res)=>{
+        const {postId,uid} = req.query
+        const addData = await voteCollection.deleteOne({postId,uid})
+        res.send(addData)
     })
     
     app.post('/addClass',secureRoute,verifyAdmin,async (req,res)=>{
