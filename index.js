@@ -144,8 +144,16 @@ async function run() {
     })
 
     app.get('/forumPosts',async (req,res)=>{
-      const posts = await forumPostCollection.find().toArray()
+      const {size,page} = req.query
+      const sizeInt = parseInt(size)
+      const pageInt = parseInt(page)
+      const posts = await forumPostCollection.find().skip(pageInt*sizeInt).limit(sizeInt).sort({date:-1}).toArray()
       res.send(posts)
+    })
+    app.get('/forumPostsCount',async (req,res)=>{
+      const posts = await forumPostCollection.find().toArray()
+      const postsLength = posts.length
+      res.send({postsLength})
     })
 
     app.get('/trainers',secureRoute,verifyAdmin, async(req,res)=>{
@@ -329,6 +337,9 @@ async function run() {
               time: '',
               days: '',
               startedDate: '',
+              bio:'',
+              xp:'',
+              media:'',
             }
           }
           const addTrainer = await usersCollection.updateOne({uid: trainerData.uid},updatedData,options)
