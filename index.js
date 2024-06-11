@@ -171,7 +171,15 @@ async function run() {
         res.send(getClasses)
     })
 
-    app.get('/allClasses', async (req,res)=>{
+
+
+    app.get('/allClassesName', async (req,res)=>{
+         const getClasses = await classCollection.find().toArray()
+         return res.send(getClasses)
+    })
+
+
+   app.get('/allClasses', async (req,res)=>{
       const {size,page,searchValue} = req.query
           if(searchValue === 'false'){
             const sizeInt = parseInt(size)
