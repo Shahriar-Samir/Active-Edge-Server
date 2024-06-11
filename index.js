@@ -99,6 +99,17 @@ async function run() {
        }
       return res.status(403).send({message:'forbidden access'})
   }
+  const verifyAllUser = async (req,res,next)=>{
+     const {email} = req.decoded
+     const user = await usersCollection.findOne({email})
+     const isTrainer = user?.role === 'trainer'
+     const isAdmin = user?.role === 'admin'
+     const isMember = user?.role === 'member'
+     if(isTrainer || isAdmin || isMember){
+       return next()
+       }
+      return res.status(403).send({message:'forbidden access'})
+  }
 
 
 
@@ -135,7 +146,10 @@ async function run() {
     })
 
     app.get('/allClasses', async (req,res)=>{
-        const getClasses = await classCollection.find().toArray()
+      const {size,page} = req.query
+      const sizeInt = parseInt(size)
+      const pageInt = parseInt(page)
+        const getClasses = await classCollection.find().skip(pageInt*sizeInt).limit(sizeInt).toArray()
         res.send(getClasses)
     })
     app.get('/subscribers',secureRoute,verifyAdmin, async (req,res)=>{
@@ -151,10 +165,20 @@ async function run() {
       const posts = await forumPostCollection.find().skip(pageInt*sizeInt).limit(sizeInt).sort({date:-1}).toArray()
       res.send(posts)
     })
+    app.get('/forumPost/:id',async (req,res)=>{
+      const {id} = req.params
+      const post = await forumPostCollection.findOne({_id:new ObjectId(id)})
+      res.send(post)
+    })
     app.get('/forumPostsCount',async (req,res)=>{
       const posts = await forumPostCollection.find().toArray()
       const postsLength = posts.length
       res.send({postsLength})
+    })
+    app.get('/classesCount',async (req,res)=>{
+      const classes = await classCollection.find().toArray()
+      const classesLength = classes.length
+      res.send({classesLength})
     })
 
     app.get('/trainers',secureRoute,verifyAdmin, async(req,res)=>{
@@ -228,6 +252,17 @@ async function run() {
         res.send(addUser)
     })
 
+    app.get('/myVoteStatus',async (req,res)=>{
+        const {uid,postId} = req.query
+        const vote = await voteCollection.findOne({uid,postId})
+        if(vote){
+          const voteStatus = vote.type
+          return res.send(voteStatus)
+        }
+        const voteStatus = 'noVote'
+        return res.send(voteStatus)
+    })
+
     app.get('/getUpVotes/:postId',async(req,res)=>{
       const {postId} = req.params
       const upVotes = await voteCollection.find({postId,type:'upVote'}).toArray()
@@ -235,12 +270,12 @@ async function run() {
       res.send({allUpVotes})
     })
 
-    app.post('/addUpVote',async (req,res)=>{
+    app.post('/addUpVote', secureRoute,verifyAllUser,async (req,res)=>{
         const data = req.body
         const addData = await voteCollection.insertOne(data)
         res.send(addData)
     })
-    app.delete('/removeUpVote',async (req,res)=>{
+    app.delete('/removeUpVote',secureRoute,verifyAllUser ,async (req,res)=>{
         const {postId,uid} = req.query
         const addData = await voteCollection.deleteOne({postId,uid,type:'upVote'})
         res.send(addData)
@@ -252,12 +287,12 @@ async function run() {
       res.send({allDownVotes})
     })
 
-    app.post('/addDownVote',async (req,res)=>{
+    app.post('/addDownVote',secureRoute,verifyAllUser,async (req,res)=>{
         const data = req.body
         const addData = await voteCollection.insertOne(data)
         res.send(addData)
     })
-    app.delete('/removeDownVote',async (req,res)=>{
+    app.delete('/removeDownVote',secureRoute,verifyAllUser, async(req,res)=>{
         const {postId,uid} = req.query
         const addData = await voteCollection.deleteOne({postId,uid,type:'downVote'})
         res.send(addData)
