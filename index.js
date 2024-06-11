@@ -42,6 +42,7 @@ async function run() {
     const slotCollection = client.db('Active-Edge').collection('Slots')
     const paymentCollection = client.db('Active-Edge').collection('Payments')
     const voteCollection = client.db('Active-Edge').collection('Votes')
+    const feedbackCollection = client.db('Active-Edge').collection('Feedbacks')
 
 
 
@@ -171,6 +172,10 @@ async function run() {
       const sizeInt = parseInt(size)
       const pageInt = parseInt(page)
       const posts = await forumPostCollection.find().skip(pageInt*sizeInt).limit(sizeInt).sort({date:-1}).toArray()
+      res.send(posts)
+    })
+    app.get('/latestPosts',async (req,res)=>{
+      const posts = await forumPostCollection.find().sort({date:-1}).limit(6).toArray()
       res.send(posts)
     })
     app.get('/forumPost/:id',async (req,res)=>{
@@ -321,6 +326,11 @@ async function run() {
     app.post('/addForumPost',secureRoute,verifyCrossUser,async (req,res)=>{
         const post = req.body
         const addPost = await forumPostCollection.insertOne(post)
+        res.send(addPost)
+    })
+    app.post('/addFeedback',secureRoute,verifyMember,async (req,res)=>{
+        const post = req.body
+        const addPost = await feedbackCollection.insertOne(post)
         res.send(addPost)
     })
     app.post('/confirmApplication',secureRoute,verifyAdmin,async (req,res)=>{
