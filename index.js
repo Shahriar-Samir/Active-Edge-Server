@@ -146,11 +146,19 @@ async function run() {
     })
 
     app.get('/allClasses', async (req,res)=>{
-      const {size,page} = req.query
-      const sizeInt = parseInt(size)
-      const pageInt = parseInt(page)
-        const getClasses = await classCollection.find().skip(pageInt*sizeInt).limit(sizeInt).toArray()
-        res.send(getClasses)
+      const {size,page,searchValue} = req.query
+      console.log(searchValue)
+          if(searchValue === 'false'){
+            const sizeInt = parseInt(size)
+            const pageInt = parseInt(page)
+         const getClasses = await classCollection.find().skip(pageInt*sizeInt).limit(sizeInt).toArray()
+         return res.send(getClasses)
+          }
+          if(searchValue?.length >= 1){
+            const getClasses = await classCollection.find({className:{$regex: new RegExp(searchValue,'i')}}).toArray()
+            return res.send(getClasses)
+          }
+   
     })
     app.get('/subscribers',secureRoute,verifyAdmin, async (req,res)=>{
         const subscribers = await subscriberCollection.find().toArray()
