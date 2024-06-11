@@ -43,6 +43,7 @@ async function run() {
     const paymentCollection = client.db('Active-Edge').collection('Payments')
     const voteCollection = client.db('Active-Edge').collection('Votes')
     const feedbackCollection = client.db('Active-Edge').collection('Feedbacks')
+    const paidMemberCollection = client.db('Active-Edge').collection('Paid_Members')
 
 
 
@@ -405,8 +406,20 @@ async function run() {
 
     app.post('/addPayment',secureRoute,verifyMember,async (req,res)=>{
         const paymentInfo = req.body
-        const addPayment = await paymentCollection.insertOne(paymentInfo)
-        res.send(addPayment)
+        const memberName = paymentInfo.displayName
+        const memberUid = paymentInfo.uid
+        const memberEmail = paymentInfo.email
+
+        const memberExist = await paidMemberCollection.findOne({uid:memberUid}) 
+        if(memberExist){
+          const addPayment = await paymentCollection.insertOne(paymentInfo)
+          return res.send(addPayment)
+        }
+        else{
+          const addPayment = await paymentCollection.insertOne(paymentInfo)
+          const addPaidMember = await paymentCollection.insertOne({memberName,memberEmail,memberUid})
+          res.send({addPaidMember,addPayment})
+        }
     })
 
     
