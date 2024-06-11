@@ -178,6 +178,10 @@ async function run() {
          const getClasses = await classCollection.find().toArray()
          return res.send(getClasses)
     })
+    app.get('/allPaidMember', async (req,res)=>{
+         const allPaidMembers = await paidMemberCollection.find().toArray()
+         return res.send(allPaidMembers)
+    })
 
 
    app.get('/allClasses', async (req,res)=>{
@@ -406,18 +410,15 @@ async function run() {
 
     app.post('/addPayment',secureRoute,verifyMember,async (req,res)=>{
         const paymentInfo = req.body
-        const memberName = paymentInfo.displayName
-        const memberUid = paymentInfo.uid
-        const memberEmail = paymentInfo.email
-
-        const memberExist = await paidMemberCollection.findOne({uid:memberUid}) 
+        const {memberName,memberEmail,memberUid} = paymentInfo 
+        const memberExist = await paidMemberCollection.findOne({memberUid}) 
         if(memberExist){
           const addPayment = await paymentCollection.insertOne(paymentInfo)
           return res.send(addPayment)
         }
         else{
           const addPayment = await paymentCollection.insertOne(paymentInfo)
-          const addPaidMember = await paymentCollection.insertOne({memberName,memberEmail,memberUid})
+          const addPaidMember = await paidMemberCollection.insertOne({memberName,memberEmail,memberUid})
           res.send({addPaidMember,addPayment})
         }
     })
