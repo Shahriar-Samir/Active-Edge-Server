@@ -144,6 +144,20 @@ async function run() {
         }
         res.send()
     })
+    app.put('/updateUserData/:id' ,async (req,res)=>{
+      const data = req.body
+      const {id} = req.params
+      const options = {upsert:true}
+      const filter = { uid:id};
+      const updatedData = {
+        $set:{
+          displayName : data.displayName,
+          photoURL : data.photoURL,
+        },
+      }
+        const updateUser = await usersCollection.updateOne(filter,updatedData,options)
+        res.send(updateUser)
+    })
     app.get('/userRole/:id',async (req,res)=>{
         const {id} = req.params
         const getUser = await usersCollection.findOne({uid:id})
