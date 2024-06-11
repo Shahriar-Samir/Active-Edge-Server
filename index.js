@@ -227,14 +227,22 @@ async function run() {
         const addUser = await usersCollection.insertOne(userData)
         res.send(addUser)
     })
+
+    app.get('/getUpVotes/:postId',async(req,res)=>{
+      const {postId} = req.params
+      const upVotes = await voteCollection.find({postId,type:'upVote'}).toArray()
+      const allUpVotes = upVotes.length
+      res.send({allUpVotes})
+    })
+
     app.post('/addUpVote',async (req,res)=>{
         const data = req.body
         const addData = await voteCollection.insertOne(data)
         res.send(addData)
     })
     app.delete('/removeUpVote',async (req,res)=>{
-        const {postId,uid} = req.query
-        const addData = await voteCollection.deleteOne({postId,uid})
+        const {postId,uid,type} = req.query
+        const addData = await voteCollection.deleteOne({postId,uid,type})
         res.send(addData)
     })
     
