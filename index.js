@@ -55,7 +55,7 @@ async function run() {
       }
       const {authorization} = req.headers
       const token = authorization.split(' ')[1]
-      jwt.verify(token,process.env.TOKEN,(err,decoded)=>{    
+      jwt.verify(token,process.env.TOKEN_SECRET,(err,decoded)=>{    
         if(err){
           return res.status(401).send({message:'forbidden access'})
         }
@@ -279,6 +279,12 @@ async function run() {
       const slot = await slotCollection.findOne({_id:idInt})
       res.send(slot)
     })
+    app.get('/availableTrainerSlot/:id',secureRoute,verifyMember,async (req,res)=>{
+      const {id} = req.params
+      const idInt = new ObjectId(id)
+      const slot = await slotCollection.findOne({_id:idInt,status:'unselected'})
+      res.send(slot)
+    })
     app.get('/payments',secureRoute, verifyAdmin,async (req,res)=>{
       const payments = await paymentCollection.find().sort({ date: -1 }).limit(6).toArray()
       res.send(payments)
@@ -410,17 +416,28 @@ async function run() {
 
     app.post('/addPayment',secureRoute,verifyMember,async (req,res)=>{
         const paymentInfo = req.body
-        const {memberName,memberEmail,memberUid} = paymentInfo 
-        const memberExist = await paidMemberCollection.findOne({memberUid}) 
-        if(memberExist){
-          const addPayment = await paymentCollection.insertOne(paymentInfo)
-          return res.send(addPayment)
-        }
-        else{
+        const {memberName,memberEmail,memberUid,slotId} = paymentInfo 
           const addPayment = await paymentCollection.insertOne(paymentInfo)
           const addPaidMember = await paidMemberCollection.insertOne({memberName,memberEmail,memberUid})
-          res.send({addPaidMember,addPayment})
+          const options = {upsert:true}
+          const updateInfo = {
+            $set:{
+             status : 'Booked',
+             memberName: memberName,
+             type: paymentInfo.packageName,
+             memberEmail: memberEmail,
+             memberUid: memberUid,
+          }
         }
+          const updateSlot = await slotCollection.updateOne({_id:new ObjectId(slotId)}, updateInfo,options)  
+          res.send({addPaidMember,addPayment})
+        
+    })
+
+    app.get('/availableSlots/:id', async(req,res)=>{
+      const {id} = req.params
+      const slots = await slotCollection.find({uid:id,status:'unselected'}).toArray()
+      res.send(slots)
     })
 
     
